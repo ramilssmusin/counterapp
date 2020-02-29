@@ -2,11 +2,15 @@ import React, {useState} from 'react';
 import Counter from "./Counter";
 import TotalCount from "./TotalCount";
 import AddCounter from "./AddCounter";
+import { Button, Modal, ModalHeader, ModalBody, ModalFooter, FormGroup, Input } from 'reactstrap';
+import ConfirmationDelete from "./ConfirmationDelete";
 
 function App() {
     const initialCounts = [{id:1, name: 'Counter 1', count: 10},
                           {id:2, name: 'Counter 2', count: 15}];
     const [counts, setCounts] = useState(initialCounts);
+
+    const [confirmCounter, setConfirmCounter] = useState({});
 
     function resetTotalCount() {
         let newCounts = counts.map(cur => ({...cur, count:0}));
@@ -36,16 +40,25 @@ function App() {
         setCounts(newCounts);
     }
 
-    function deleteCounter(id) {
-        const newCounts = counts.filter(e=>e.id!==id);
-        setCounts(newCounts);
-    }
-
     function addCounter(name, count) {
         const newCounts = [...counts];
         const el = {name: name, count: count, id: Date.now()};
         newCounts.push(el);
         setCounts(newCounts);
+    }
+
+    const confirmRemoveCounter = counter => {
+        setConfirmCounter(counter);
+    }
+
+    const removeConfirmed = (e) => {
+        const newCounters = counts.filter(el => el.id !== confirmCounter.id);
+        setCounts(newCounters);
+        setConfirmCounter({});
+    }
+
+    const confirmDeleteCancel = () => {
+        setConfirmCounter({});
     }
 
     return (
@@ -59,19 +72,21 @@ function App() {
 
         {counts.map(el => <Counter
             key={el.id}
-            name={el.name}
-            id={el.id}
-            count={el.count}
+            counter={el}
             decrement = {decrement}
             increment = {increment}
-            reset = {resetCount}
-            deleteC = {deleteCounter}
+            remove = {confirmRemoveCounter}
         />)}
 
         <AddCounter
             onSubmit = {addCounter}
         />
 
+        <ConfirmationDelete
+            name={confirmCounter.name}
+            onSuccess={removeConfirmed}
+            onCancel={confirmDeleteCancel}
+        />
 
 
     </div>
